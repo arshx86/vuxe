@@ -59,3 +59,15 @@ $antibot->blacklisted_ips = ['10.106.29.11', '56.12.51.120' ...]
 ```php
 $antibot->blacklisted_regions = ['europe', 'asia', 'ocenia', 'asia', 'africa' ...] // this would only allow USA to access your site
 ```
+
+### Examples
+- Blocking Turkey IPs
+![image](https://github.com/arshx86/AntiBot-php/assets/85416153/9963a19d-955a-4b99-bba1-89c69318799c)
+
+- Blocking VPNs (ExpressVPN, NordVPN, Mullvad are easily detected, there's so less vpns can bypass this)
+![image](https://github.com/arshx86/AntiBot-php/assets/85416153/017190c6-e487-4918-a4c0-d88735837174)
+
+- Blocked bot user agents (you can extend the list)
+  ![image](https://github.com/arshx86/AntiBot-php/assets/85416153/d2ecc566-b568-4bb8-8951-9ef3bad36550)
+
+
