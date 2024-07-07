@@ -14,6 +14,8 @@ class AntiBot
     public bool $block_bogon = true;
     public bool $block_vpn = true;
     public bool $block_abuse = true;
+    public bool $block_crawler = true;
+
 
     /**
      * If set, only these IP addresses will be allowed.
@@ -90,54 +92,25 @@ class AntiBot
         }
 
         // Check if the IP is a bot
-        $botIndicators = [
-            "is_bogon", // unassigned or reserved IP
-            "is_crawler", // search engine bot
-            "is_datacenter", // datacenter IP
-            "is_tor", // tor exit node
-            "is_proxy",
-            "is_vpn",
-            "is_abuser"
-        ];
+        $botIndicators =
+            [
+                "is_vpn" => [$this->block_vpn, $ipDetails->is_vpn, "VPN IP"],
+                "is_proxy" => [$this->block_vpn, $ipDetails->is_proxy, "Proxy IP"],
+                "is_datacenter" => [$this->block_vpn, $ipDetails->is_datacenter, "Datacenter IP"],
 
-        foreach ($botIndicators as $indicator) {
+                "is_tor" => [$this->block_tor, $ipDetails->is_tor, "Tor IP"],
+                "is_bogon" => [$this->block_bogon, $ipDetails->is_bogon, "Bogon IP"],
+                "is_crawler" => [$this->block_crawler, $ipDetails->is_crawler, "Crawler IP"],
 
-            if ($ipDetails->$indicator) {
+                "is_abuser" => [$this->block_abuse, $ipDetails->is_abuser, "Abuser IP"]
+            ];
 
-                switch ($indicator) {
-                    case "is_bogon":
-                        if ($this->block_bogon) {
-                            return "Bogon IP";
-                        }
-                    case "is_crawler":
-                        if ($this->block_bogon) {
-                            return "Crawler IP";
-                        }
-                    case "is_datacenter":
-                        if ($this->block_vpn) {
-                            return "Datacenter IP";
-                        }
-                    case "is_tor":
-                        if ($this->block_tor) {
-                            return "Tor IP";
-                        }
-                    case "is_proxy":
-                        if ($this->block_vpn) {
-                            return "Proxy IP";
-                        }
-                    case "is_vpn":
-                        if ($this->block_vpn) {
-                            return "VPN IP";
-                        }
-                    case "is_abuser":
-                        if ($this->block_abuse) {
-                            return "Abuser IP";
-                        }
-                }
+        foreach ($botIndicators as $key => $value) {
+            if ($value[0] && $value[1]) {
+                return $value[2];
             }
-
-
         }
+
 
         return false;
 
