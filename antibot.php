@@ -9,6 +9,19 @@ class AntiBot
     private $ip;
     private $user_agent;
 
+
+    public bool $block_tor = true;
+    public bool $block_bogon = true;
+    public bool $block_vpn = true;
+    public bool $block_abuse = true;
+
+    /**
+     * If set, only these IP addresses will be allowed.
+     * Block rules will be ignored for these IP addresses.
+     * Range is not supported.
+     */
+    public array $whitelisted_ips = [];
+
     /**
      * Blacklisted countries with english names (Turkey, Finland, Estonia etc.). Supply 'All' to block all countries and only allow certain countries.
      */
@@ -30,15 +43,10 @@ class AntiBot
      * Sets up the AntiBot class.
      * github.com/arshx86
      */
-    public function __construct($ip, $user_agent, array $blacklisted_countries = [], array $blacklisted_ips = [], array $blacklisted_regions = [])
+    public function __construct($ip, $user_agent)
     {
-
         $this->ip = $ip;
         $this->user_agent = $user_agent;
-
-        $this->blacklisted_countries = $blacklisted_countries;
-        $this->blacklisted_ips = $blacklisted_ips;
-        $this->blacklisted_regions = $blacklisted_regions;
     }
 
 
@@ -48,6 +56,13 @@ class AntiBot
      */
     public function Execute(): false|string
     {
+
+        // If whitelisted has IPs, check if the IP is whitelisted
+        $whitelist_count = count($this->whitelisted_ips);
+        if ($whitelist_count > 0) {
+            $inarray = in_array($this->ip, $this->whitelisted_ips);
+            return $inarray ? false : "Not Whitelisted";
+        }
 
         // Check UA
         if (self::hasBotUa($this->user_agent)) {
@@ -76,19 +91,52 @@ class AntiBot
 
         // Check if the IP is a bot
         $botIndicators = [
-            "is_bogon",
-            "is_crawler",
-            "is_datacenter",
-            "is_tor",
+            "is_bogon", // unassigned or reserved IP
+            "is_crawler", // search engine bot
+            "is_datacenter", // datacenter IP
+            "is_tor", // tor exit node
             "is_proxy",
             "is_vpn",
             "is_abuser"
         ];
 
         foreach ($botIndicators as $indicator) {
+
             if ($ipDetails->$indicator) {
-                return "Indicator was found: $indicator";
+
+                switch ($indicator) {
+                    case "is_bogon":
+                        if ($this->block_bogon) {
+                            return "Bogon IP";
+                        }
+                    case "is_crawler":
+                        if ($this->block_bogon) {
+                            return "Crawler IP";
+                        }
+                    case "is_datacenter":
+                        if ($this->block_vpn) {
+                            return "Datacenter IP";
+                        }
+                    case "is_tor":
+                        if ($this->block_tor) {
+                            return "Tor IP";
+                        }
+                    case "is_proxy":
+                        if ($this->block_vpn) {
+                            return "Proxy IP";
+                        }
+                    case "is_vpn":
+                        if ($this->block_vpn) {
+                            return "VPN IP";
+                        }
+                    case "is_abuser":
+                        if ($this->block_abuse) {
+                            return "Abuser IP";
+                        }
+                }
             }
+
+
         }
 
         return false;

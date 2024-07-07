@@ -16,7 +16,6 @@ if ($result != false) {
     die("\n Bot detected: $result");
 }
 
-
 function get_ip()
 {
     // Get IP address
