@@ -3,12 +3,14 @@
 /**
  * https://github.com/arshx86
  */
-class AntiBot
+error_reporting(E_ERROR | E_PARSE);
+
+class Vuxe
 {
 
-    private $ip;
-    private $user_agent;
-
+    public $ip;
+    public $user_agent;
+    public $ip_info;
 
     public bool $block_tor = true;
     public bool $block_bogon = true;
@@ -30,7 +32,7 @@ class AntiBot
     public array $blacklisted_countries = [];
 
     /**
-     * Blacklisted IP addresses. Range is not supported.
+     * Blacklisted IP addresses.
      */
     public array $blacklisted_ips = []; // IP addresses
 
@@ -41,14 +43,10 @@ class AntiBot
     public array $blacklisted_regions = []; // Example: America, Europe, Asia, Africa, Oceania
 
 
-    /**
-     * Sets up the AntiBot class.
-     * github.com/arshx86
-     */
-    public function __construct($ip, $user_agent)
+    public function __construct($SERVER)
     {
-        $this->ip = $ip;
-        $this->user_agent = $user_agent;
+        $this->ip = $this->extractIP($SERVER);
+        $this->user_agent = $SERVER['HTTP_USER_AGENT'] ?? "unknown";
     }
 
 
@@ -56,7 +54,7 @@ class AntiBot
      * Analyzes the IP and user agent to determine if the user is a bot.
      * Returns false if the user is a bot, otherwise returns the details of the indicator.
      */
-    public function Execute(): false|string
+    public function Check(): false|string
     {
 
         // If whitelisted has IPs, check if the IP is whitelisted
@@ -67,8 +65,8 @@ class AntiBot
         }
 
         // Check UA
-        if (self::hasBotUa($this->user_agent)) {
-            return "Bot User Agent";
+        if (self::isBotUA($this->user_agent)) {
+            return "isBot";
         }
 
         // Check if the IP is blacklisted
@@ -78,6 +76,7 @@ class AntiBot
 
         // Get IP details
         $ipDetails = json_decode(file_get_contents("https://api.ipapi.is/?q=" . $this->ip));
+        $this->ip_info = $ipDetails;
 
         // Check if the IP is blacklisted
         $country = $ipDetails->location->country;
@@ -119,7 +118,7 @@ class AntiBot
     /**
      * Checks if the user agent is a bot.
      */
-    public function hasBotUa(string $ua)
+    public function isBotUA(string $ua)
     {
 
         $data = array(
@@ -1541,6 +1540,15 @@ class AntiBot
                 return true;
             }
         }
+
+    }
+
+    /* Gets IP, Hostname, and User Agent */
+    private function extractIP($arrays)
+    {
+
+        // https://stackoverflow.com/a/26261699
+        return $arrays['HTTP_CLIENT_IP'] ?? ($arrays['HTTP_X_FORWARDED_FOR'] ?? $arrays['REMOTE_ADDR']);
 
     }
 
