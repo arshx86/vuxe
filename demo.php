@@ -1,19 +1,19 @@
 <?php
 
 include 'antibot.php';
+$vuxe = new Vuxe($_SERVER); // supply $_SERVER, we'll auto extract the ip and useragent
 
-// Get required params
-$ip = $_SERVER['HTTP_CLIENT_IP'];
-$user_agent = $_SERVER['HTTP_USER_AGENT'];
+/* to pass an custom ip, you can set it later
+$vuxe->ip = ''; 
+$vuxe->user_agent = '';
+*/
 
-echo "Execution for: $ip";
-
-// Prepare client
-$antibot = new AntiBot($ip, $user_agent);
-$result = $antibot->Execute();
+$result = $vuxe->check();
 if ($result != false) {
-    die("\n Bot detected: $result");
+    die('Unable to verify as human, error: ' . $result . ' for ip: ' . $vuxe->ip);
 }
+
+// verified...
 
 ?>
 
