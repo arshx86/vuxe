@@ -1,6 +1,5 @@
 # vuxe
-RIP all the bots, bogon IPs, and VPNs with vuxe.
-Vuxe is a HTTP middleware ruleset for all PHP projects.
+Vuxe is a PHP class designed to detect if a visitor is using a VPN, proxy, or accessing from a country you have blocked.
 
 # Features
 - Block VPNs, TORs, Proxies, Abusers, Datacenters
